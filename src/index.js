@@ -7,6 +7,7 @@ import cors from "cors"
 
 import { connectDB } from "./lib/db.js";
 
+
 import userRoutes from "./routes/user.route.js";
 import adminRoutes from "./routes/admin.route.js";
 import authRoutes from "./routes/auth.route.js";
@@ -38,6 +39,9 @@ app.use(fileUpload({
     }
 }))
 
+app.get("/", (req, res) => {
+    res.send("Hello World");
+})
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
