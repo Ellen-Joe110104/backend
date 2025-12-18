@@ -1,4 +1,5 @@
 import { Song } from "../models/song.model.js"
+import { Album } from "../models/album.model.js"
 
 export const getAllSongs = async (req, res, next) => {
     try {
@@ -80,6 +81,30 @@ export const getTrendingSongs = async (req, res, next) => {
 
         res.json(songs);
 
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const searchSongs = async (req, res, next) => {
+    try {
+        const { query } = req.query;
+
+        const songs = await Song.find({
+            $or: [
+                { title: { $regex: query, $options: "i" } },
+                { artist: { $regex: query, $options: "i" } },
+            ],
+        });
+
+        const albums = await Album.find({
+            $or: [
+                { title: { $regex: query, $options: "i" } },
+                { artist: { $regex: query, $options: "i" } },
+            ],
+        });
+
+        res.json({ songs, albums });
     } catch (error) {
         next(error);
     }
