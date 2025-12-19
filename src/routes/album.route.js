@@ -4,7 +4,7 @@ import { protectRoute, requiredAdmin } from "../middleware/auth.middleware.js"
 
 const router = Router();
 
-router.get("/", protectRoute, requiredAdmin, getAllAlbums);
+router.get("/", protectRoute, getAllAlbums);
 router.get("/:albumId", getAlbumbyId);
 
 export default router;
