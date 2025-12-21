@@ -1,9 +1,12 @@
 import express from "express";
 import dotenv from "dotenv";
-import { clerkMiddleware} from '@clerk/express'
+import { clerkMiddleware } from '@clerk/express'
 import fileUpload from "express-fileupload"
 import path from "path"
 import cors from "cors"
+import { createServer } from "http";
+
+import { initializeSocket } from "./lib/socket.js";
 
 import { connectDB } from "./lib/db.js";
 
@@ -21,7 +24,10 @@ const __dirname = path.resolve();
 const app = express();
 const PORT = process.env.PORT;
 
-app.use (cors(
+const httpServer = createServer(app);
+initializeSocket(httpServer);
+
+app.use(cors(
     {
         origin: "http://localhost:3000",
         credentials: true,
@@ -50,11 +56,11 @@ app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
 
 // Hàm xử lý lỗi
-app.use((err,req,res,next) => {
-    res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message});
+app.use((err, req, res, next) => {
+    res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message });
 })
 
-app.listen(PORT, ()=>{
+httpServer.listen(PORT, () => {
     console.log("Server is running on port " + PORT);
     connectDB();
 });
