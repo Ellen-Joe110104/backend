@@ -2,19 +2,19 @@ import { Album } from '../models/album.model.js'
 import { Song } from '../models/song.model.js'
 import { User } from '../models/user.model.js'
 
-export const getStats = async (req,res, next) => {
+export const getStats = async (req, res, next) => {
     try {
 
-        const [totalSongs, totalAlbums, totalUsers, uniqueArtists]  = await Promise.all([
+        const [totalSongs, totalAlbums, totalUsers, uniqueArtists] = await Promise.all([
             Song.countDocuments(),
-            User.countDocuments(),
             Album.countDocuments(),
+            User.countDocuments(),
 
             Song.aggregate([
                 {
                     $unionWith: {
-                        coll:"album",
-                        pipeline:[]
+                        coll: "album",
+                        pipeline: []
                     }
                 },
 
