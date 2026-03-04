@@ -3,13 +3,13 @@ import { Album } from "../models/album.model.js"
 import cloudinary from "../lib/cloudinary.js"
 
 // Hàm hỗ trợ tải lên Cloudinary
-const uploadToCloudinary = async (file) => {
+const uploadToCloudinary = async (file, resource_type = "auto") => {
     try {
         const result = await cloudinary.uploader.upload(file.tempFilePath, {
-            resource_type: "auto",
+            resource_type,
         }
-    )
-    return result.secure_url
+        )
+        return result.secure_url
 
     } catch (error) {
         console.log("Error in uploadToCloudinary", error);
@@ -19,16 +19,16 @@ const uploadToCloudinary = async (file) => {
 
 export const createSong = async (req, res, next) => {
     try {
-        if(!req.files || !req.files.audioFile || !req.files.imageFile) {
+        if (!req.files || !req.files.audioFile || !req.files.imageFile) {
             return res.status(400).json({ message: "Please uploade all files" });
         }
 
-        const {title, artist, albumId, duration} = req.body
-        const audioFile =  req.files.audioFile
+        const { title, artist, albumId, duration } = req.body
+        const audioFile = req.files.audioFile
         const imageFile = req.files.imageFile
 
-        const audioUrl = await uploadToCloudinary(audioFile);
-        const imageUrl = await uploadToCloudinary(imageFile);
+        const audioUrl = await uploadToCloudinary(audioFile, "video");
+        const imageUrl = await uploadToCloudinary(imageFile, "image");
 
         const song = new Song({
             title,
@@ -42,14 +42,14 @@ export const createSong = async (req, res, next) => {
         await song.save()
 
         // Kiểm tra nếu mà bài hát thuộc album thì sẽ cập nhật lại album
-        if(albumId){
-            await Album.findByIdAndUpdate(albumId,{
-                $push: { song: song._id},
+        if (albumId) {
+            await Album.findByIdAndUpdate(albumId, {
+                $push: { song: song._id },
             });
         }
         res.status(201).json(song)
     } catch (error) {
-        console.log("Error in createSong",error);
+        console.log("Error in createSong", error);
         next(error);
     }
 }
@@ -60,15 +60,15 @@ export const deleteSong = async (req, res, next) => {
 
         const song = await Song.findById(id)
 
-    // Kiểm tra nếu mà bài hát thuộc album thì sẽ cập nhật lại album
-    if(song.albumId){
-        await Album.findByIdAndUpdate(song.albumId, {
-            $pull: { songs: song._id },
-        })
-    }
-    await Song.findByIdAndDelete(id)
+        // Kiểm tra nếu mà bài hát thuộc album thì sẽ cập nhật lại album
+        if (song.albumId) {
+            await Album.findByIdAndUpdate(song.albumId, {
+                $pull: { songs: song._id },
+            })
+        }
+        await Song.findByIdAndDelete(id)
 
-    res.status(200).json({ message: "Song delete successfully"});
+        res.status(200).json({ message: "Song delete successfully" });
 
     } catch (error) {
         console.log("Error in deleteSong", error);
@@ -78,24 +78,24 @@ export const deleteSong = async (req, res, next) => {
 
 export const createAlbum = async (req, res, next) => {
     try {
-        const {title, artist, releaseYear} = req.body
-    const {imageFile} = req.files
+        const { title, artist, releaseYear } = req.body
+        const { imageFile } = req.files
 
-    const imageUrl = await uploadToCloudinary(imageFile)
+        const imageUrl = await uploadToCloudinary(imageFile)
 
-    const album = new Album({
-        title,
-        artist,
-        imageUrl,
-        releaseYear
-    })
+        const album = new Album({
+            title,
+            artist,
+            imageUrl,
+            releaseYear
+        })
 
-    await album.save();
+        await album.save();
 
-    res.status(201).json(album);
+        res.status(201).json(album);
 
     } catch (error) {
-        console.log("Error in createAlbum",error);
+        console.log("Error in createAlbum", error);
         next(error);
     }
 }
@@ -105,7 +105,7 @@ export const deleteAlbum = async (req, res, next) => {
         const { id } = req.params
         await Song.deleteMany({ albumId: id });
         await Album.findByIdAndDelete(id);
-        res.status(200).json({ message: "Album deleted successfully"})
+        res.status(200).json({ message: "Album deleted successfully" })
     } catch (error) {
         console.log("Error in deleteAlbum", error);
         next(error);

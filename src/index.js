@@ -41,7 +41,7 @@ app.use(fileUpload({
     tempFileDir: path.join(__dirname, "tmp"),
     createParentPath: true,
     limits: {
-        fileSize: 10 * 1024 * 1024 //Dung lượng tối đa 10MB
+        fileSize: 50 * 1024 * 1024 //Dung lượng tối đa 50MB
     }
 }))
 
